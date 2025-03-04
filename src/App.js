@@ -1,25 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import FlagGrid from "./FlagGrid";
+import "./App.css";
 
-function App() {
+const App = () => {
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("https://xcountries-backend.azurewebsites.net/all");
+        if (Array.isArray(response.data)) {
+          setCountries(response.data);
+        } else {
+          throw new Error("Invalid API response format");
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err.message || err);
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-container">
+      <h1>Country Flags</h1>
+      {loading && <p>Loading...</p>}
+      {error && <p className="error">{error}</p>}
+      {!loading && !error && <FlagGrid countries={countries} />}
     </div>
   );
-}
+};
 
 export default App;
